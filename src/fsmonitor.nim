@@ -1,9 +1,9 @@
 #[
   Created at: 08/27/2021 20:23:54 Friday
-  Modified at: 08/27/2021 09:44:49 PM Friday
+  Modified at: 08/27/2021 09:50:40 PM Friday
 ]#
 
-from std/os import commandLineParams, walkDirRec, fileExists
+from std/os import commandLineParams, walkDirRec, fileExists, expandFilename
 from std/sha1 import secureHashFile, `$`
 from std/tables import `[]=`, Table, pairs, hasKey, `[]`
 from std/json import parseJson, `{}`, to, `%*`, `%`, `[]=`, `$`
@@ -50,8 +50,8 @@ proc `$`(self: ChangedHashes): string =
 proc main*(dirPath: seq[string]; dbPath: string; genDb = false) =
   if dirPath.len == 1:
     var hashes: Hashes
-    for dir in dirPath[0].walkDirRec:
-      hashes[dir] = $secureHashFile dir
+    for dir in dirPath[0].walkDirRec(relative = false):
+      hashes[expandFilename dir] = $secureHashFile dir
     if genDb:
       writeFile dbPath, $ %* hashes
     else:
