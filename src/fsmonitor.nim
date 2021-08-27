@@ -1,6 +1,6 @@
 #[
   Created at: 08/27/2021 20:23:54 Friday
-  Modified at: 08/27/2021 09:50:40 PM Friday
+  Modified at: 08/27/2021 09:52:38 PM Friday
 ]#
 
 from std/os import commandLineParams, walkDirRec, fileExists, expandFilename
@@ -8,6 +8,7 @@ from std/sha1 import secureHashFile, `$`
 from std/tables import `[]=`, Table, pairs, hasKey, `[]`
 from std/json import parseJson, `{}`, to, `%*`, `%`, `[]=`, `$`
 from std/strformat import fmt
+from std/strutils import join
 
 # from std/tables import `$`, pairs
 
@@ -44,8 +45,10 @@ proc `$`(self: Changekind): string =
   of CkDeleted: "deleted"
 
 proc `$`(self: ChangedHashes): string =
+  var res: seq[string]
   for (file, change) in self.pairs:
-    result &= fmt"{file}: {change}"
+    res.add fmt"{file}: {change}"
+  result = res.join "\n"
 
 proc main*(dirPath: seq[string]; dbPath: string; genDb = false) =
   if dirPath.len == 1:
