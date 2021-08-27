@@ -1,6 +1,6 @@
 #[
   Created at: 08/27/2021 20:23:54 Friday
-  Modified at: 08/27/2021 09:39:45 PM Friday
+  Modified at: 08/27/2021 09:44:49 PM Friday
 ]#
 
 from std/os import commandLineParams, walkDirRec, fileExists
@@ -52,11 +52,12 @@ proc main*(dirPath: seq[string]; dbPath: string; genDb = false) =
     var hashes: Hashes
     for dir in dirPath[0].walkDirRec:
       hashes[dir] = $secureHashFile dir
-    if dbPath.fileExists:
-      let lastHashes = dbPath.getLastHashes
-      echo hashes.compare(lastHashes)
     if genDb:
       writeFile dbPath, $ %* hashes
+    else:
+      if dbPath.fileExists:
+        let lastHashes = dbPath.getLastHashes
+        echo hashes.compare(lastHashes)
   else:
     quit "Please provide just 1 parameter"
 

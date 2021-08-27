@@ -13,3 +13,6 @@ bin = @["fsmonitor"]
 
 requires "nim >= 1.4.6"
 requires "cligen"
+
+task buildRelease, "Build the release version":
+  exec "nimble -d:release build"
