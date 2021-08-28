@@ -1,10 +1,10 @@
 #[
   Created at: 08/27/2021 20:23:54 Friday
-  Modified at: 08/28/2021 12:08:01 AM Saturday
+  Modified at: 08/28/2021 01:49:15 AM Saturday
 ]#
 
-from std/os import commandLineParams, walkDirRec, fileExists, expandFilename,
-                   getHomeDir, `/`, dirExists, createDir
+from std/os import commandLineParams, walkDir, fileExists, expandFilename,
+                   getHomeDir, `/`, dirExists, createDir, pcDir, pcfile
 from std/sha1 import secureHashFile, `$`
 from std/tables import `[]=`, Table, pairs, hasKey, `[]`
 from std/json import parseJson, `{}`, to, `%*`, `%`, `[]=`, `$`
@@ -28,6 +28,10 @@ proc getLastHashes(dir: string; dbPath: string): Hashes =
       if dir in path:
         result[path] = hash
   except:
+    if dbPath.fileExists:
+      if dbPath.readFile.len == 0:
+        writeFile dbPath, "{}"
+        return
     quit "Error on parse DB"
 
 proc compare(newHashes, oldHashes: Hashes): ChangedHashes =
@@ -61,15 +65,26 @@ proc main*(dirPath: seq[string]; dbName = "db.json"; genDb = false) =
     dir = expandFilename dirPath[0]
   if dirPath.len == 1:
     var hashes: Hashes
-    for dir in dir.walkDirRec:
-      hashes[expandFilename dir] = $secureHashFile dir
+    proc walk(directory: string) =
+      for dir in directory.walkDir:
+        case dir.kind:
+        of pcDir:
+          walk dir.path
+        of pcFile:
+          hashes[expandFilename dir.path] = $secureHashFile dir.path
+        else: discard
+    walk dir
+
     if genDb:
+      if dbPath.fileExists:
+        let lastHashes = "".getLastHashes dbPath
+        for (file, hash) in lastHashes.pairs:
+          hashes[file] = hash
       writeFile dbPath, $ %* hashes
     else:
       if dbPath.fileExists:
         let lastHashes = dir.getLastHashes dbPath
         echo hashes.compare(lastHashes)
-        # echo $lastHashes
   else:
     quit "Please provide just 1 parameter"
 
